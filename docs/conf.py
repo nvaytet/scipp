@@ -47,7 +47,8 @@ extensions = [
     'sphinx.ext.mathjax',
     'IPython.sphinxext.ipython_directive',
     'IPython.sphinxext.ipython_console_highlighting',
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx_copybutton'
 ]
 
 intersphinx_mapping = {
