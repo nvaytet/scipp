@@ -136,6 +136,6 @@ class PlotController3d(PlotController):
         self.view.update_data(new_values)
 
     def toggle_profile_view(self, *args, **kwargs):
-        super().toggle_profile_view(*args, **kwargs)
+        # super().toggle_profile_view(*args, **kwargs)
         self.model.create_positions_lookup(self.pos_axparams)
 

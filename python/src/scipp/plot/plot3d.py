@@ -136,3 +136,5 @@ class SciPlot3d(SciPlot):
 
         # Render the figure once all components have been created.
         self.render(norm=norm)
+
+        self.controller.toggle_profile_view()

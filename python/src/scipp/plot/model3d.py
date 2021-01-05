@@ -5,6 +5,7 @@
 from .model import PlotModel
 from .tools import to_bin_centers
 from .._scipp import core as sc
+from .._variable import array as sarray
 import numpy as np
 
 
@@ -189,8 +190,26 @@ class PlotModel3d(PlotModel):
             }
         return extents
 
-    def create_positions_lookup(self):
+    def create_positions_lookup(self, axparams):
         # The size of the lookup table should be a fraction of the positions
         # array size.
-        table_size = round((len(self.pos_array)*0.1)**(1.0/3.0))
+        npoints = len(self.pos_array)
+        table_size = round((npoints*0.25)**(1.0/3.0))
+        scattered = sc.DataArray(
+            coords={
+            'x': sc.geometry.x(self.pos_coord),
+            'y': sc.geometry.y(self.pos_coord),
+            'z': sc.geometry.z(self.pos_coord)
+            },
+            data=sarray(dims=self.pos_coord.dims,
+                values=np.arange(npoints)))
+        xyzbins = [sarray(dims=[key], unit=self.pos_coord.unit,
+                         values=np.linspace(
+                            axparams[key]["lims"][0],
+                            axparams[key]["lims"][1],
+                            table_size)) for key in "xyz"]
+
+        self.lookup = sc.bin(scattered, xyzbins)
+        print(self.lookup)
+
 
