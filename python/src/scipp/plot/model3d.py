@@ -188,3 +188,9 @@ class PlotModel3d(PlotModel):
                 self.pos_coord.unit
             }
         return extents
+
+    def create_positions_lookup(self):
+        # The size of the lookup table should be a fraction of the positions
+        # array size.
+        table_size = round((len(self.pos_array)*0.1)**(1.0/3.0))
+

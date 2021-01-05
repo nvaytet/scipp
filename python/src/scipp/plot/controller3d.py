@@ -134,3 +134,8 @@ class PlotController3d(PlotController):
         new_values = self.model.get_slice_values(
             mask_info=self.get_masks_info())
         self.view.update_data(new_values)
+
+    def toggle_profile_view(self, *args, **kwargs):
+        super().toggle_profile_view(*args, **kwargs)
+        self.model.create_positions_lookup(self.pos_axparams)
+
