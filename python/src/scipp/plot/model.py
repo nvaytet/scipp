@@ -7,6 +7,7 @@ from .tools import to_bin_edges, to_bin_centers, make_fake_coord, vars_to_err
 from .._utils import name_with_unit, value_to_string
 from .._scipp import core as sc
 import numpy as np
+import time
 
 
 class PlotModel:
@@ -244,20 +245,32 @@ class PlotModel:
         Slice the data array according to the dimensions and extents listed
         in slices.
         """
+        start = time.time()
         for dim, [lower, upper] in slices.items():
             # TODO: Could this be optimized for performance?
             # Note: we use the range 1 [dim, i:i+1] slicing here instead of
             # index slicing [dim, i] so that we hit the correct branch in
             # rebin, because in the case of slicing an outer dim, rebin-inner
             # cannot deal with non-continuous data as an input.
+            start1 = time.time()
             array = array[dim, lower:upper]
+            print("slicing", time.time() - start1)
             if (upper - lower) > 1:
-                array.data = sc.rebin(
-                    array.data, dim, array.meta[dim],
-                    sc.concatenate(array.meta[dim][dim, 0],
-                                   array.meta[dim][dim, -1], dim))
-            if not keep_dims:
+                # array.data = sc.rebin(
+                #     array.data, dim, array.meta[dim],
+                #     sc.concatenate(array.meta[dim][dim, 0],
+                #                    array.meta[dim][dim, -1], dim))
+                start1 = time.time()
+                s = np.sum(array.data.values, axis=0)
+                print("numpy sum", time.time() - start1)
+                print(array.data.dims)
+
+                start1 = time.time()
+                array.data = sc.sum(array.data, dim)
+                print("sum", time.time() - start1)
+            elif not keep_dims:
                 array = array[dim, 0]
+        print("slice_data", time.time() - start)
         return array
 
     def get_multid_coord(self):

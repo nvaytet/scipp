@@ -49,8 +49,8 @@ class PlotModel2d(PlotModel):
             # the axes tick formatter to use xyrebin coords
 
     def get_slice_values(self, mask_info, extent=None):
-        values = self.dslice.values
-        transpose = self.displayed_dims['x'] == self.dslice.dims[0]
+        values = self.dslice.data.values
+        transpose = self.displayed_dims['x'] == self.dslice.data.dims[0]
         if transpose:
             values = np.transpose(values)
         slice_values = {"values": values, "extent": extent}
@@ -74,10 +74,11 @@ class PlotModel2d(PlotModel):
         """
         Resample 2d images to a fixed resolution to handle very large images.
         """
-        data = self._model.data
-        for dim in self._squeeze:
-            data = data[dim, 0]
-        self.dslice = data
+        # data = self._model.data
+        # for dim in self._squeeze:
+        #     data = data[dim, 0]
+        # self.dslice = data
+        # # self.dslice = self.slice_data(self.data_arrays[self.name], slices)
         return self.get_slice_values(mask_info=mask_info, extent=extent)
 
     def update_data(self, slices, mask_info):
@@ -86,14 +87,15 @@ class PlotModel2d(PlotModel):
         entries in the dict of data arrays.
         Then perform dynamic image resampling based on current viewport.
         """
-        self._squeeze = []
-        for dim, [start, stop] in slices.items():
-            if start + 1 == stop:
-                self._model.bounds[dim] = start
-            else:
-                self._squeeze.append(dim)
-                self._model.resolution[dim] = 1
-                self._model.bounds[dim] = (start, stop)
+        # self._squeeze = []
+        # for dim, [start, stop] in slices.items():
+        #     if start + 1 == stop:
+        #         self._model.bounds[dim] = start
+        #     else:
+        #         self._squeeze.append(dim)
+        #         self._model.resolution[dim] = 1
+        #         self._model.bounds[dim] = (start, stop)
+        self.dslice = self.slice_data(self.data_arrays[self.name], slices)
         return self._update_image(mask_info=mask_info)
 
     def update_viewport(self, xylims, mask_info):

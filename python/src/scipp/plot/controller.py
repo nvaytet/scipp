@@ -6,6 +6,8 @@ from .tools import check_log_limits
 from .._utils import value_to_string
 from .._scipp import core as sc
 import numpy as np
+import time
+
 
 
 class PlotController:
@@ -424,6 +426,7 @@ class PlotController:
         called when update_axes is called since the displayed data needs to be
         updated when the axes have changed.
         """
+        start = time.time()
 
         owner_dim = None
 
@@ -453,6 +456,7 @@ class PlotController:
                 self.model.update_profile_model(visible=True,
                                                 slices=slices,
                                                 profile_dim=self.profile_dim)
+        print("update_data: ", time.time()-start)
 
     def toggle_mask(self, change):
         """
