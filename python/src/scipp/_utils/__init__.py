@@ -10,3 +10,4 @@ from .colors import *
 from .is_type import *
 from .to_string import *
 from .comparison import *
+from .bin_edges import *

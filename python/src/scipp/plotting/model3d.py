@@ -3,8 +3,9 @@
 # @author Neil Vaytet
 
 from .model import PlotModel
-from .tools import to_bin_centers, fix_empty_range
+from .tools import fix_empty_range
 from .._scipp import core as sc
+from .._utils import to_bin_centers
 import numpy as np
 
 
