@@ -8,10 +8,6 @@ def _encode_dict(meta):
     return {key: encode(var) for key, var in meta.items()}
 
 
-def _decode_dict(meta):
-    return {key: decode(var) for key, var in meta.items()}
-
-
 def encode(obj):
     import msgpack_numpy as m
     if isinstance(obj, Variable):
@@ -44,8 +40,8 @@ def decode(obj):
                         values=m.decode(obj['values']),
                         variances=variances)
     if '__scipp.DataArray__' in obj:
-        return DataArray(data=decode(obj['data']),
-                         coords=_decode_dict(obj['coords']),
-                         masks=_decode_dict(obj['masks']),
-                         attrs=_decode_dict(obj['attrs']))
+        return DataArray(data=obj['data'],
+                         coords=obj['coords'],
+                         masks=obj['masks'],
+                         attrs=obj['attrs'])
     return obj
