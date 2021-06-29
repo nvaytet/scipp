@@ -126,3 +126,22 @@ _binding.bind_functions_as_methods(
 _binding.bind_functions_as_methods(DataArray, globals(), ('groupby', ))
 _binding.bind_functions_as_methods(Dataset, globals(), ('groupby', ))
 del _binding
+
+from .serialization import encode, decode
+
+try:
+    import msgpack
+    from typing import List, Dict, Tuple
+    from distributed.protocol import dask_serialize, dask_deserialize
+
+    @dask_serialize.register(Variable)
+    def serialize(var: Variable) -> Tuple[Dict, List[bytes]]:
+        header = {}
+        frames = [msgpack.packb(var, default=encode)]
+        return header, frames
+
+    @dask_deserialize.register(Variable)
+    def deserialize(header: Dict, frames: List[bytes]) -> Variable:
+        return msgpack.unpackb(frames[0], object_hook=decode)
+except ImportError:
+    pass
