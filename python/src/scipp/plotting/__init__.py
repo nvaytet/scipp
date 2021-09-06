@@ -60,6 +60,11 @@ if is_doc_build and plt is not None:
         "figure.dpi": 96
     })
 
+from bokeh.io import output_notebook
+output_notebook(
+    #hide_banner=True
+)
+
 
 def plot(*args, **kwargs):
     """

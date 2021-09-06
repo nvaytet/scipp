@@ -7,6 +7,8 @@ from .tools import fig_to_pngbytes
 import ipywidgets as ipw
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from bokeh.io import push_notebook, show
+from bokeh.plotting import figure
 
 
 class PlotFigure:
@@ -34,18 +36,28 @@ class PlotFigure:
             if figsize is None:
                 figsize = (config.plot.width / config.plot.dpi,
                            config.plot.height / config.plot.dpi)
-            self.fig, self.ax = plt.subplots(1, 1, figsize=figsize, dpi=config.plot.dpi)
+            # self.fig, self.ax = plt.subplots(1, 1, figsize=figsize, dpi=config.plot.dpi)
+
+            self.fig = figure(title=title,
+                              plot_height=config.plot.height,
+                              plot_width=config.plot.width,
+                              background_fill_color='#efefef')
+            # r1 = p.line(xx, a[0][:, 0], color="#8888cc", line_width=1.5, alpha=0.8)
+            # r2 = p.line(xx, a[1][:, 0], color="#8888cc", line_width=1.5, alpha=0.8)
+            # self.handle = show(self.fig, notebook_handle=True)
+            self.handle = None
+
             if self.padding is None:
                 self.padding = config.plot.padding
-            self.fig.tight_layout(rect=self.padding)
-            if self.is_widget():
-                self.toolbar = toolbar(mpl_toolbar=self.fig.canvas.toolbar)
-                self.fig.canvas.toolbar_visible = False
+            # self.fig.tight_layout(rect=self.padding)
+            # if self.is_widget():
+            #     self.toolbar = toolbar(mpl_toolbar=self.fig.canvas.toolbar)
+            #     self.fig.canvas.toolbar_visible = False
         else:
             self.own_axes = False
             self.fig = self.ax.get_figure()
 
-        self.ax.set_title(title)
+        # self.ax.set_title(title)
 
         self.axformatter = {}
         self.axlocator = {}
@@ -86,13 +98,14 @@ class PlotFigure:
         If not, convert the plot to a png image and place inside an ipywidgets
         Image container.
         """
-        if self.is_widget():
-            return ipw.HBox([
-                self.toolbar._to_widget(),
-                self._to_image() if self.closed else self.fig.canvas
-            ])
-        else:
-            return self._to_image()
+        return ipw.HBox()
+        # if self.is_widget():
+        #     return ipw.HBox([
+        #         self.toolbar._to_widget(),
+        #         self._to_image() if self.closed else self.fig.canvas
+        #     ])
+        # else:
+        #     return self._to_image()
 
     def _to_image(self):
         """
@@ -148,6 +161,7 @@ class PlotFigure:
         rescaling the data norm, and change the scale (log or linear) on the
         axes.
         """
+        return
         if self.toolbar is not None:
             self.toolbar.connect(controller=controller)
         self.fig.canvas.mpl_connect('button_press_event',
@@ -169,6 +183,11 @@ class PlotFigure:
         If `draw_no_delay` has been set to True (via `set_draw_no_delay`,
         then we use `draw()` instead of `draw_idle()`.
         """
+        if self.handle is None:
+            self.handle = show(self.fig, notebook_handle=True)
+        push_notebook(handle=self.handle)
+
+        return
         if self.draw_no_delay:
             self.fig.canvas.draw()
         else:

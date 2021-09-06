@@ -68,27 +68,27 @@ class PlotFigure1d(PlotFigure):
         scale = scale['x']
         self._legend_labels = legend_labels
 
-        if self.own_axes:
-            self._lines = {}
-            title = self.ax.get_title()
-            self.ax.clear()
-            self.ax.set_title(title)
+        # if self.own_axes:
+        #     self._lines = {}
+        #     title = self.ax.get_title()
+        #     self.ax.clear()
+        #     self.ax.set_title(title)
 
-        self.ax.set_xscale(scale)
-        self.ax.set_yscale("log" if self.norm == "log" else "linear")
-        self.ax.set_ylabel(unit if self.ylabel is None else self.ylabel)
+        # self.ax.set_xscale(scale)
+        # self.ax.set_yscale("log" if self.norm == "log" else "linear")
+        # self.ax.set_ylabel(unit if self.ylabel is None else self.ylabel)
 
-        if self.grid:
-            self.ax.grid()
+        # if self.grid:
+        #     self.ax.grid()
 
-        self.ax.set_xlabel(
-            self._formatters['x']['label'] if self.xlabel is None else self.xlabel)
+        # self.ax.set_xlabel(
+        #     self._formatters['x']['label'] if self.xlabel is None else self.xlabel)
 
-        self.ax.xaxis.set_major_locator(self.axlocator['x'][scale])
-        self.ax.xaxis.set_major_formatter(self.axformatter['x'][scale])
+        # self.ax.xaxis.set_major_locator(self.axlocator['x'][scale])
+        # self.ax.xaxis.set_major_formatter(self.axformatter['x'][scale])
 
-        if self.show_legend():
-            self.ax.legend(loc=self.legend["loc"])
+        # if self.show_legend():
+        #     self.ax.legend(loc=self.legend["loc"])
 
         self._axes_updated = True
 
@@ -114,6 +114,7 @@ class PlotFigure1d(PlotFigure):
         if self._legend_labels and len(name) > 0:
             label = name
 
+        hist = False
         if hist:
             line.data = self.ax.step(
                 [1, 2], [1, 2],
@@ -136,34 +137,35 @@ class PlotFigure1d(PlotFigure):
                 # not.
                 line.masks[m].set_gid("onaxes")
         else:
-            line.data = self.ax.plot([1, 2], [1, 2],
-                                     label=label,
-                                     zorder=10,
-                                     picker=self.picker,
-                                     **line.mpl_params)[0]
-            for m in masks:
-                line.masks[m] = self.ax.plot([1, 2], [1, 2],
-                                             zorder=11,
-                                             mec=self._mask_color,
-                                             mfc="None",
-                                             mew=3.0,
-                                             linestyle="none",
-                                             marker=line.mpl_params["marker"])[0]
-                line.masks[m].set_gid("onaxes")
+            line.data = self.fig.line([1, 2], [1, 2], color="#8888cc", line_width=1.5)
+            # self.ax.plot([1, 2], [1, 2],
+            #                          label=label,
+            #                          zorder=10,
+            #                          picker=self.picker,
+            #                          **line.mpl_params)[0]
+            # for m in masks:
+            #     line.masks[m] = self.ax.plot([1, 2], [1, 2],
+            #                                  zorder=11,
+            #                                  mec=self._mask_color,
+            #                                  mfc="None",
+            #                                  mew=3.0,
+            #                                  linestyle="none",
+            #                                  marker=line.mpl_params["marker"])[0]
+            #     line.masks[m].set_gid("onaxes")
 
-        if self.picker:
-            line.data.set_pickradius(5.0)
-        line.data.set_url(name)
+        # if self.picker:
+        #     line.data.set_pickradius(5.0)
+        # line.data.set_url(name)
 
-        # Add error bars
-        if self.errorbars[name]:
-            line.error = self.ax.errorbar([1, 2], [1, 2],
-                                          yerr=[1, 1],
-                                          color=line.mpl_params["color"],
-                                          zorder=10,
-                                          fmt="none")
-        if self.show_legend():
-            self.ax.legend(loc=self.legend["loc"])
+        # # Add error bars
+        # if self.errorbars[name]:
+        #     line.error = self.ax.errorbar([1, 2], [1, 2],
+        #                                   yerr=[1, 1],
+        #                                   color=line.mpl_params["color"],
+        #                                   zorder=10,
+        #                                   fmt="none")
+        # if self.show_legend():
+        #     self.ax.legend(loc=self.legend["loc"])
         return line
 
     def _preprocess_hist(self, name, vals):
@@ -198,7 +200,9 @@ class PlotFigure1d(PlotFigure):
                                                     masks=vals['masks'].keys(),
                                                     hist=hist)
             line = self._lines[name]
-            line.data.set_data(vals["values"]["x"], vals["values"]["y"])
+            # line.data.set_data(vals["values"]["x"], vals["values"]["y"])
+            line.data.data_source.data['x'] = vals["values"]["x"]
+            line.data.data_source.data['y'] = vals["values"]["y"]
             lab = vals["label"] if len(vals["label"]) > 0 else name
             line.label = f'{name}[{lab}]'  # used later if line is kept
 
@@ -220,13 +224,13 @@ class PlotFigure1d(PlotFigure):
             xmin = min(xmin, low)
             xmax = max(xmax, high)
 
-        deltax = 0.05 * (xmax - xmin)
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=UserWarning)
-            self.ax.set_xlim([xmin - deltax, xmax + deltax])
-        if self._axes_updated:
-            self._axes_updated = False
-            self.fig.tight_layout(rect=self.padding)
+        # deltax = 0.05 * (xmax - xmin)
+        # with warnings.catch_warnings():
+        #     warnings.filterwarnings("ignore", category=UserWarning)
+        #     self.ax.set_xlim([xmin - deltax, xmax + deltax])
+        # if self._axes_updated:
+        #     self._axes_updated = False
+        #     self.fig.tight_layout(rect=self.padding)
 
         self.draw()
 
@@ -337,12 +341,12 @@ class PlotFigure1d(PlotFigure):
         """
         Rescale y axis to the contents of the plot.
         """
-        if (vmin is None) and (vmax is None):
-            self.ax.autoscale(True)
-            self.ax.relim()
-            self.ax.autoscale_view()
-        else:
-            self.ax.set_ylim(vmin, vmax)
+        # if (vmin is None) and (vmax is None):
+        #     self.ax.autoscale(True)
+        #     self.ax.relim()
+        #     self.ax.autoscale_view()
+        # else:
+        #     self.ax.set_ylim(vmin, vmax)
         self.draw()
 
     def show_legend(self):
