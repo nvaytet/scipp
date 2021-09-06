@@ -46,7 +46,7 @@ def plot1d(scipp_obj_dict, **kwargs):
             'controller': PlotController1d
         }
         if masks is None:
-            masks = {"color": "k"}
+            masks = {"color": "#000000"}
         params = make_params(norm=norm, vmin=vmin, vmax=vmax, masks=masks)
         out['vmin'] = params["values"]["vmin"]
         out['vmax'] = params["values"]["vmax"]

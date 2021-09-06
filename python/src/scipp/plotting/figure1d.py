@@ -8,6 +8,7 @@ from .tools import get_line_param
 import numpy as np
 import copy as cp
 import warnings
+from bokeh.models import ColumnDataSource, Whisker
 
 
 class PlotFigure1d(PlotFigure):
@@ -143,10 +144,11 @@ class PlotFigure1d(PlotFigure):
             #                          zorder=10,
             #                          picker=self.picker,
             #                          **line.mpl_params)[0]
+            print(self._mask_color)
             for m in masks:
                 line.masks[m] = self.fig.circle([1, 2], [1, 2],
                                                 color=self._mask_color,
-                                                size=5)
+                                                size=10)
                 # zorder=11,
                 # mec=self._mask_color,
                 # mfc="None",
@@ -159,13 +161,20 @@ class PlotFigure1d(PlotFigure):
         #     line.data.set_pickradius(5.0)
         # line.data.set_url(name)
 
-        # # Add error bars
-        # if self.errorbars[name]:
-        #     line.error = self.ax.errorbar([1, 2], [1, 2],
-        #                                   yerr=[1, 1],
-        #                                   color=line.mpl_params["color"],
-        #                                   zorder=10,
-        #                                   fmt="none")
+        # Add error bars
+        if self.errorbars[name]:
+            source_error = ColumnDataSource(
+                data=dict(base=[1, 2], lower=[1, 1], upper=[1, 1]))
+            line.error = Whisker(source=source_error,
+                                 base="base",
+                                 upper="upper",
+                                 lower="lower")
+            self.fig.add_layout(line.error)
+            # line.error = self.ax.errorbar([1, 2], [1, 2],
+            #                               yerr=[1, 1],
+            #                               color=line.mpl_params["color"],
+            #                               zorder=10,
+            #                               fmt="none")
         # if self.show_legend():
         #     self.ax.legend(loc=self.legend["loc"])
         return line
@@ -211,14 +220,20 @@ class PlotFigure1d(PlotFigure):
             for m in vals["masks"]:
                 line.masks[m].data_source.data['x'] = vals["values"]["x"]
                 line.masks[m].data_source.data['y'] = np.where(
-                    vals["masks"][m], vals["values"]["y"], None).astype(np.float32)
+                    vals["masks"][m], vals["values"]["y"],
+                    float('nan'))  #.astype(np.float32)
 
             if self.errorbars[name]:
-                coll = line.error.get_children()[0]
-                coll.set_segments(
-                    self._change_segments_y(vals["variances"]["x"],
-                                            vals["variances"]["y"],
-                                            vals["variances"]["e"]))
+                line.error.source.data['base'] = vals["variances"]["x"]
+                line.error.source.data[
+                    'lower'] = vals["variances"]["y"] - vals["variances"]["e"]
+                line.error.source.data[
+                    'upper'] = vals["variances"]["y"] + vals["variances"]["e"]
+                # coll = line.error.get_children()[0]
+                # coll.set_segments(
+                #     self._change_segments_y(vals["variances"]["x"],
+                #                             vals["variances"]["y"],
+                #                             vals["variances"]["e"]))
             coord = vals["values"]["x"]
             low = min(coord[0], coord[-1])
             high = max(coord[0], coord[-1])
