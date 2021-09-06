@@ -49,7 +49,7 @@ class PlotFigure1d(PlotFigure):
         elif "show" not in legend:
             legend["show"] = True
 
-        self._mask_color = mask_color if mask_color is not None else 'k'
+        self._mask_color = mask_color if mask_color is not None else '#000000'
         self.picker = picker
         self.norm = norm
         self.legend = legend
@@ -114,44 +114,46 @@ class PlotFigure1d(PlotFigure):
         if self._legend_labels and len(name) > 0:
             label = name
 
-        hist = False
+        # hist = False
         if hist:
-            line.data = self.ax.step(
-                [1, 2], [1, 2],
-                label=label,
-                zorder=10,
-                picker=self.picker,
-                **{key: line.mpl_params[key]
-                   for key in ["color", "linewidth"]})[0]
+            line.data = self.fig.step([1, 2], [1, 2],
+                                      line_width=1.5,
+                                      color=line.mpl_params['color'])
+            # label=label,
+            # zorder=10,
+            # picker=self.picker,
+            # **{key: line.mpl_params[key]
+            #    for key in ["color", "linewidth"]})[0]
             for m in masks:
-                line.masks[m] = self.ax.step([1, 2], [1, 2],
-                                             linewidth=line.mpl_params["linewidth"] *
-                                             3.0,
-                                             color=self._mask_color,
-                                             zorder=9)[0]
+                line.masks[m] = self.fig.step([1, 2], [1, 2],
+                                              linewidth=3.5,
+                                              color=self._mask_color)
+                # zorder=9)[0]
                 # Abuse a mostly unused property `gid` of Line2D to
                 # identify the line as a mask. We set gid to `onaxes`.
                 # This is used by the profile viewer in the 2D plotter
                 # to know whether to show the mask or not, depending on
                 # whether the cursor is hovering over the 2D image or
                 # not.
-                line.masks[m].set_gid("onaxes")
+                # line.masks[m].set_gid("onaxes")
         else:
-            line.data = self.fig.line([1, 2], [1, 2], color="#8888cc", line_width=1.5)
+            line.data = self.fig.circle([1, 2], [1, 2], color=line.mpl_params['color'])
             # self.ax.plot([1, 2], [1, 2],
             #                          label=label,
             #                          zorder=10,
             #                          picker=self.picker,
             #                          **line.mpl_params)[0]
-            # for m in masks:
-            #     line.masks[m] = self.ax.plot([1, 2], [1, 2],
-            #                                  zorder=11,
-            #                                  mec=self._mask_color,
-            #                                  mfc="None",
-            #                                  mew=3.0,
-            #                                  linestyle="none",
-            #                                  marker=line.mpl_params["marker"])[0]
-            #     line.masks[m].set_gid("onaxes")
+            for m in masks:
+                line.masks[m] = self.fig.circle([1, 2], [1, 2],
+                                                color=self._mask_color,
+                                                size=5)
+                # zorder=11,
+                # mec=self._mask_color,
+                # mfc="None",
+                # mew=3.0,
+                # linestyle="none",
+                # marker=line.mpl_params["marker"])[0]
+                # line.masks[m].set_gid("onaxes")
 
         # if self.picker:
         #     line.data.set_pickradius(5.0)
@@ -207,10 +209,9 @@ class PlotFigure1d(PlotFigure):
             line.label = f'{name}[{lab}]'  # used later if line is kept
 
             for m in vals["masks"]:
-                line.masks[m].set_data(
-                    vals["values"]["x"],
-                    np.where(vals["masks"][m], vals["values"]["y"],
-                             None).astype(np.float32))
+                line.masks[m].data_source.data['x'] = vals["values"]["x"]
+                line.masks[m].data_source.data['y'] = np.where(
+                    vals["masks"][m], vals["values"]["y"], None).astype(np.float32)
 
             if self.errorbars[name]:
                 coll = line.error.get_children()[0]
