@@ -43,10 +43,10 @@ def plot2d(scipp_obj_dict, **kwargs):
         params = make_params(cmap=cmap, norm=norm, vmin=vmin, vmax=vmax, masks=masks)
         out['vmin'] = params["values"]["vmin"]
         out['vmax'] = params["values"]["vmax"]
-        if len(dims) > 2:
-            params['extend_cmap'] = 'both'
-            out['profile_figure'] = make_profile(ax=pax,
-                                                 mask_color=params['masks']['color'])
+        # if len(dims) > 2:
+        #     params['extend_cmap'] = 'both'
+        #     out['profile_figure'] = make_profile(ax=pax,
+        #                                          mask_color=params['masks']['color'])
 
         out['figure'] = PlotFigure2d(ax=ax,
                                      cax=cax,

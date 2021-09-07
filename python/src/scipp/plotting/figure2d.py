@@ -63,12 +63,13 @@ class PlotFigure2d(PlotFigure):
         # a = (self.cmap(self.norm(ones)) * 255).astype(int)
         # im = ((a[..., 3] << 24) + (a[..., 2] << 16) + (a[..., 1] << 8) + (a[..., 0]))
         # _rgba_to_ints
-        self.image_colors = self.fig.image_rgba(
-            image=[self._rgba_to_ints(self.cmap(self.norm(ones)))],
-            x=[0],
-            y=[0],
-            dw=[1],
-            dh=[1])
+        self.image_colors = None
+        # self.fig.image_rgba(
+        #     image=[self._rgba_to_ints(self.cmap(self.norm(ones)))],
+        #     x=[0],
+        #     y=[0],
+        #     dw=[1],
+        #     dh=[1])
 
         # self.image_values = self.ax.imshow(ones,
         #                                    norm=self.norm,
@@ -77,12 +78,23 @@ class PlotFigure2d(PlotFigure):
         #                                    zorder=2,
         #                                    alpha=0.0,
         #                                    **image_params)
+
+        self.image_masks = self.fig.image(image=[ones],
+                                          x=[0],
+                                          y=[0],
+                                          dw=[1],
+                                          dh=[1],
+                                          palette='Greys256')
+
         self.image_values = self.fig.image(image=[ones],
                                            x=[0],
                                            y=[0],
                                            dw=[1],
                                            dh=[1],
-                                           alpha=0.0)
+                                           palette='Viridis256')
+
+        self.image_masks.glyph.color_mapper.nan_color = (0, 0, 0, 0)
+        self.image_values.glyph.color_mapper.nan_color = (0, 0, 0, 0)
 
         # self.cbar = None
         # if cbar:
@@ -163,21 +175,29 @@ class PlotFigure2d(PlotFigure):
         # self.draw()
         # return
 
-        rgba = self._rgba_to_ints(self.cmap(self.norm(new_values["values"])))
+        # rgba = self._rgba_to_ints(self.cmap(self.norm(new_values["values"])))
+        # if "masks" in new_values:
+        #     indices = np.where(new_values["masks"])
+        #     rgba[indices] = self._rgba_to_ints(
+        #         self._mask_cmap(self.norm(new_values["values"][indices])))
+
+        # self.image_colors.data_source.data['image'] = [rgba]
         if "masks" in new_values:
-            indices = np.where(new_values["masks"])
-            rgba[indices] = self._rgba_to_ints(
-                self._mask_cmap(self.norm(new_values["values"][indices])))
+            self.image_masks.data_source.data['image'] = [new_values["values"]]
 
-        self.image_colors.data_source.data['image'] = [rgba]
-        self.image_values.data_source.data['image'] = [new_values["values"]]
+        # indices = np.ravel(np.where(new_values["masks"]))
+        # new_values["values"][indices] = np.nan
+        self.image_values.data_source.data['image'] = [
+            np.where(new_values["masks"], np.nan, new_values["values"])
+            if "masks" in new_values else new_values["values"]
+        ]
 
-        self.image_colors.data_source.data['x'] = [new_values["extent"][0]]
-        self.image_colors.data_source.data['y'] = [new_values["extent"][2]]
-        self.image_colors.data_source.data['dw'] = [
+        self.image_masks.data_source.data['x'] = [new_values["extent"][0]]
+        self.image_masks.data_source.data['y'] = [new_values["extent"][2]]
+        self.image_masks.data_source.data['dw'] = [
             new_values["extent"][1] - new_values["extent"][0]
         ]
-        self.image_colors.data_source.data['dh'] = [
+        self.image_masks.data_source.data['dh'] = [
             new_values["extent"][3] - new_values["extent"][2]
         ]
         self.image_values.data_source.data['x'] = [new_values["extent"][0]]
