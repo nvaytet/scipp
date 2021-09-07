@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize, LogNorm
 import math
 import warnings
+from bokeh.models import Range1d, HoverTool
 
 
 class PlotFigure2d(PlotFigure):
@@ -56,32 +57,56 @@ class PlotFigure2d(PlotFigure):
             "interpolation": "nearest"
         }
 
-        self.image_colors = self.ax.imshow(self.cmap(self.norm(ones)),
-                                           zorder=1,
-                                           **image_params)
+        # self.image_colors = self.ax.imshow(self.cmap(self.norm(ones)),
+        #                                    zorder=1,
+        #                                    **image_params)
+        # a = (self.cmap(self.norm(ones)) * 255).astype(int)
+        # im = ((a[..., 3] << 24) + (a[..., 2] << 16) + (a[..., 1] << 8) + (a[..., 0]))
+        # _rgba_to_ints
+        self.image_colors = self.fig.image_rgba(
+            image=[self._rgba_to_ints(self.cmap(self.norm(ones)))],
+            x=[0],
+            y=[0],
+            dw=[1],
+            dh=[1])
 
-        self.image_values = self.ax.imshow(ones,
-                                           norm=self.norm,
-                                           cmap=self.cmap,
-                                           picker=5,
-                                           zorder=2,
-                                           alpha=0.0,
-                                           **image_params)
+        # self.image_values = self.ax.imshow(ones,
+        #                                    norm=self.norm,
+        #                                    cmap=self.cmap,
+        #                                    picker=5,
+        #                                    zorder=2,
+        #                                    alpha=0.0,
+        #                                    **image_params)
+        self.image_values = self.fig.image(image=[ones],
+                                           x=[0],
+                                           y=[0],
+                                           dw=[1],
+                                           dh=[1],
+                                           alpha=0.0)
 
-        self.cbar = None
-        if cbar:
-            self.cbar = plt.colorbar(self.image_values,
-                                     ax=self.ax,
-                                     cax=self.cax,
-                                     extend=extend)
-            self._disable_colorbar_offset()
-        if self.cax is None:
-            self.cbar.ax.yaxis.set_label_coords(-1.1, 0.5)
+        # self.cbar = None
+        # if cbar:
+        #     self.cbar = plt.colorbar(self.image_values,
+        #                              ax=self.ax,
+        #                              cax=self.cax,
+        #                              extend=extend)
+        #     self._disable_colorbar_offset()
+        # if self.cax is None:
+        #     self.cbar.ax.yaxis.set_label_coords(-1.1, 0.5)
         self.mask_image = {}
+
+        self.hover_tool = HoverTool(tooltips=[("x", "$x"), ("y", "$y"),
+                                              ("value", "@image")],
+                                    renderers=[self.image_values])
+        self.fig.add_tools(self.hover_tool)
 
     def _disable_colorbar_offset(self):
         if not isinstance(self.norm, LogNorm):
             self.cbar.formatter.set_useOffset(False)
+
+    def _rgba_to_ints(self, rgba):
+        a = (rgba * 255).astype(int)
+        return ((a[..., 3] << 24) + (a[..., 2] << 16) + (a[..., 1] << 8) + (a[..., 0]))
 
     def _make_limits(self, vmin, vmax):
         if math.isclose(vmin, vmax):
@@ -97,8 +122,8 @@ class PlotFigure2d(PlotFigure):
         vmin, vmax = self._make_limits(vmin, vmax)
         self.norm.vmin = vmin
         self.norm.vmax = vmax
-        self.image_values.set_clim(vmin, vmax)
-        self.opacify_colorbar()
+        # self.image_values.set_clim(vmin, vmax)
+        # self.opacify_colorbar()
         self.draw()
 
     def opacify_colorbar(self):
@@ -116,18 +141,18 @@ class PlotFigure2d(PlotFigure):
         Update axes labels, scales, tick locations and labels, as well as axes
         limits.
         """
-        self.cbar.set_label(unit)
-        self.ax.set_xlabel(
-            self._formatters['x']["label"] if self.xlabel is None else self.xlabel)
-        self.ax.set_ylabel(
-            self._formatters['y']["label"] if self.ylabel is None else self.ylabel)
-        self.ax.set_xscale(scale['x'])
-        self.ax.set_yscale(scale['y'])
+        # self.cbar.set_label(unit)
+        # self.ax.set_xlabel(
+        #     self._formatters['x']["label"] if self.xlabel is None else self.xlabel)
+        # self.ax.set_ylabel(
+        #     self._formatters['y']["label"] if self.ylabel is None else self.ylabel)
+        # self.ax.set_xscale(scale['x'])
+        # self.ax.set_yscale(scale['y'])
 
-        self.ax.xaxis.set_major_formatter(self.axformatter['x'][scale['x']])
-        self.ax.xaxis.set_major_locator(self.axlocator['x'][scale['x']])
-        self.ax.yaxis.set_major_formatter(self.axformatter['y'][scale['y']])
-        self.ax.yaxis.set_major_locator(self.axlocator['y'][scale['y']])
+        # self.ax.xaxis.set_major_formatter(self.axformatter['x'][scale['x']])
+        # self.ax.xaxis.set_major_locator(self.axlocator['x'][scale['x']])
+        # self.ax.yaxis.set_major_formatter(self.axformatter['y'][scale['y']])
+        # self.ax.yaxis.set_major_locator(self.axlocator['y'][scale['y']])
 
         self._limits_set = False
 
@@ -135,21 +160,50 @@ class PlotFigure2d(PlotFigure):
         """
         Update image array with new values.
         """
-        rgba = self.cmap(self.norm(new_values["values"]))
+        # self.draw()
+        # return
+
+        rgba = self._rgba_to_ints(self.cmap(self.norm(new_values["values"])))
         if "masks" in new_values:
             indices = np.where(new_values["masks"])
-            rgba[indices] = self._mask_cmap(self.norm(new_values["values"][indices]))
+            rgba[indices] = self._rgba_to_ints(
+                self._mask_cmap(self.norm(new_values["values"][indices])))
 
-        self.image_colors.set_data(rgba)
-        self.image_values.set_data(new_values["values"])
-        self.image_colors.set_extent(new_values["extent"])
-        self.image_values.set_extent(new_values["extent"])
-        if not self._limits_set:
-            self._limits_set = True
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore", category=UserWarning)
-                self.ax.set_xlim(new_values["extent"][:2])
-                self.ax.set_ylim(new_values["extent"][2:])
+        self.image_colors.data_source.data['image'] = [rgba]
+        self.image_values.data_source.data['image'] = [new_values["values"]]
+
+        self.image_colors.data_source.data['x'] = [new_values["extent"][0]]
+        self.image_colors.data_source.data['y'] = [new_values["extent"][2]]
+        self.image_colors.data_source.data['dw'] = [
+            new_values["extent"][1] - new_values["extent"][0]
+        ]
+        self.image_colors.data_source.data['dh'] = [
+            new_values["extent"][3] - new_values["extent"][2]
+        ]
+        self.image_values.data_source.data['x'] = [new_values["extent"][0]]
+        self.image_values.data_source.data['y'] = [new_values["extent"][2]]
+        self.image_values.data_source.data['dw'] = [
+            new_values["extent"][1] - new_values["extent"][0]
+        ]
+        self.image_values.data_source.data['dh'] = [
+            new_values["extent"][3] - new_values["extent"][2]
+        ]
+
+        # self.image_values.set_extent(new_values["extent"])
+
+        # self.image_colors.set_data(rgba)
+        # self.image_values.set_data(new_values["values"])
+        # self.image_colors.set_extent(new_values["extent"])
+        # self.image_values.set_extent(new_values["extent"])
+
+        # if not self._limits_set:
+        #     self._limits_set = True
+        #     with warnings.catch_warnings():
+        #         warnings.filterwarnings("ignore", category=UserWarning)
+        #         self.fig.x_range = Range1d(*new_values["extent"][:2])
+        #         self.fig.y_range = Range1d(*new_values["extent"][2:])
+        #         # self.ax.set_xlim(new_values["extent"][:2])
+        #         # self.ax.set_ylim(new_values["extent"][2:])
         self.draw()
 
     def toggle_norm(self, norm=None, vmin=None, vmax=None):

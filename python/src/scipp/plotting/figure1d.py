@@ -127,8 +127,9 @@ class PlotFigure1d(PlotFigure):
             #    for key in ["color", "linewidth"]})[0]
             for m in masks:
                 line.masks[m] = self.fig.step([1, 2], [1, 2],
-                                              linewidth=3.5,
+                                              line_width=3.5,
                                               color=self._mask_color)
+                line.masks[m].level = 'underlay'
                 # zorder=9)[0]
                 # Abuse a mostly unused property `gid` of Line2D to
                 # identify the line as a mask. We set gid to `onaxes`.
@@ -149,6 +150,7 @@ class PlotFigure1d(PlotFigure):
                 line.masks[m] = self.fig.circle([1, 2], [1, 2],
                                                 color=self._mask_color,
                                                 size=10)
+                line.masks[m].level = 'underlay'
                 # zorder=11,
                 # mec=self._mask_color,
                 # mfc="None",

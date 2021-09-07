@@ -28,8 +28,8 @@ class PlotView2d(PlotView):
         self.current_lims = {}
         self.global_lims = {}
 
-        for event in ['xlim_changed', 'ylim_changed']:
-            self.figure.ax.callbacks.connect(event, self._lims_changed)
+        # for event in ['xlim_changed', 'ylim_changed']:
+        #     self.figure.ax.callbacks.connect(event, self._lims_changed)
 
     def _make_data(self, new_values, mask_info):
         dims = new_values.dims
