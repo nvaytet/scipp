@@ -91,10 +91,14 @@ def make_dense_data_array(ndim=1,
         coord_dict["lab"] = sc.linspace(data.dims[0],
                                         101.,
                                         105.,
-                                        data.shape[0],
+                                        data.shape[0] + binedges,
                                         unit='s')
     if attrs:
-        attr_dict["attr"] = sc.linspace(data.dims[0], 10., 77., data.shape[0], unit='s')
+        attr_dict["attr"] = sc.linspace(data.dims[0],
+                                        10.,
+                                        77.,
+                                        data.shape[0] + binedges,
+                                        unit='s')
     if masks:
         mask_dict["mask"] = sc.Variable(dims=data.dims,
                                         values=np.where(data.values > 0, True, False))

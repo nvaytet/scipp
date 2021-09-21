@@ -8,8 +8,13 @@ import warnings
 
 is_doc_build = False
 
+from notebook import notebookapp
+servers = list(notebookapp.list_running_servers())
+print(servers)
+
 try:
     import matplotlib as mpl
+    print(mpl.get_backend())
 except ImportError:
     mpl = None
 
@@ -30,7 +35,8 @@ if ipy is not None:
         meta = meta.to_dict()
     if "scipp_docs_build" in meta:
         is_doc_build = meta["scipp_docs_build"]
-    if ("IPKernelApp" in ipy.config) and (mpl is not None):
+    if ("IPKernelApp" in ipy.config) and (mpl
+                                          is not None) and (mpl.get_backend() != "agg"):
         try:
             # Attempt to use ipympl backend
             from ipympl.backend_nbagg import Canvas
