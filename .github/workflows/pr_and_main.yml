@@ -1,0 +1,58 @@
+name: Pull request and Main
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        sudo apt-get install --yes clang-format-10 cppcheck
+        python -m pip install --upgrade pip
+        python -m pip install cmake_format==0.6.9 flake8 yapf==0.30.0
+    - name: Clang-format
+      run: |
+        clang-format-10 --version
+        find . -type f -regex '.*\.\(c\|cpp\|h\|hpp\|tcc\)' -exec clang-format-10 -i {} +
+        git diff --exit-code
+    - name: Cppcheck
+      run: |
+        if [ $(find . -type f \( -iname \*.cpp -o \
+                                 -iname \*.h -o \
+                                 -iname \*.tcc -o \
+                                 -iname \*.hpp -o \
+                                 -iname \*.hh -o \
+                                 -iname \*.c \) | wc -l) -gt 0 ]; then
+          cppcheck --quiet --force --std=c++20 --enable=all .
+        fi
+    - name: Cmake-format
+      run: |
+        cmake-format --version
+        find . -type f -name CMakeLists.txt -or -name '*.cmake' | xargs cmake-format -i
+        git diff --exit-code
+    - name: Copyright years
+      run: |
+        find . -type f -not -path '.git/*' -exec sed -ri "s/[0-9]{4} (Scipp contributors)/$(date +%Y) \1/g" {} +
+        git diff --exit-code
+    - name: Flake8
+      run: |
+        flake8 . --count --statistics
+    - name: Yapf
+      run: |
+        yapf --diff --recursive .
