@@ -12,6 +12,6 @@ on:
 
 jobs:
   code-quality:
-    uses: nvaytet/actions/workflows/code_quality.yml@main
+    uses: nvaytet/actions/.github/workflows/code_quality.yml@main
     with:
       pyversion: 3.8
